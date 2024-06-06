@@ -1,20 +1,19 @@
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
-from .models import Usuario, Role, UserRole
+from .models import Usuario
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
-    def populate_user(self, request, sociallogin, data):
-        user = Usuario()  # Use the custom user model
-        user.username = data.get('preferred_username')
-        user.email = data.get('email')
-        # Map other fields as needed
-        return user
+    def pre_social_login(self, request, sociallogin):
+        user = sociallogin.user
+        if not user.id:
+            try:
+                existing_user = Usuario.objects.get(email=user.email)
+                sociallogin.connect(request, existing_user)
+            except Usuario.DoesNotExist:
+                pass
 
     def save_user(self, request, sociallogin, form=None):
-        user = self.populate_user(request, sociallogin, form.cleaned_data if form else {})
-        user.save()
-
-        # Assign default role to the user if needed
-        default_role = Role.objects.get(name='colaborador')
-        UserRole.objects.get_or_create(user=user, role=default_role)
-
+        user = super().save_user(request, sociallogin, form)
+        if not user.username:
+            user.username = user.email
+            user.save()
         return user

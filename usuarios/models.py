@@ -4,7 +4,7 @@ from licitaciones.models import ProcurementCategory
 
 class Usuario(AbstractUser):
     keywords = models.TextField(blank=True, null=True)
-    procurement_categories = models.ManyToManyField(ProcurementCategory, blank=True, related_name='interested_users')
+    procurement_categories = models.ManyToManyField('licitaciones.ProcurementCategory', blank=True, related_name='interested_users')
 
     def __str__(self):
         return self.username

@@ -40,27 +40,38 @@ AUTHENTICATION_BACKENDS = [
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
-ACCOUNT_ADAPTER = 'usuarios.adapters.CustomSocialAccountAdapter'
-ACCOUNT_EMAIL_VERIFICATION = 'none'
-ACCOUNT_AUTHENTICATION_METHOD = 'username'
-ACCOUNT_EMAIL_REQUIRED = True
+SOCIALACCOUNT_ADAPTER = 'usuarios.adapters.CustomSocialAccountAdapter'
 ACCOUNT_USER_MODEL_USERNAME_FIELD = 'username'
 ACCOUNT_USER_MODEL_EMAIL_FIELD = 'email'
 
 SOCIALACCOUNT_PROVIDERS = {
-    'keycloak': {
-        'KEY': 'myclient',
-        'SECRET': 'z8WlX5KrCcaWpd2ZipI495IOvamDGCcn',
+    'openid_connect': {
+        'SERVER_URL': 'http://localhost:8080/auth/realms/your-realm',
+        'CLAIMS_VERIFICATION': True,
         'AUTH_PARAMS': {
             'scope': 'openid email profile'
         },
-        'OIDC_ENDPOINT': 'http://localhost:8080/auth/realms/your-realm',
-        'OAUTH2_TOKEN_URL': 'http://localhost:8080/auth/realms/BidMaster/protocol/openid-connect/token',
-        'OAUTH2_AUTHORIZE_URL': 'http://localhost:8080/auth/realms/BidMaster/protocol/openid-connect/auth',
-        'OAUTH2_USERINFO_URL': 'http://localhost:8080/auth/realms/BidMaster/protocol/openid-connect/userinfo',
-        'OAUTH2_LOGOUT_URL': 'http://localhost:8080/auth/realms/BidMaster/protocol/openid-connect/logout'
+        'CLIENT_ID': 'my-client',
+        'CLIENT_SECRET': 'z8WlX5KrCcaWpd2ZipI495IOvamDGCcn',
+        'JWT_DECODE_OPTIONS': {'verify_aud': False},
+        'JWT_EXPIRATION_DELTA': 300,
     }
 }
+
+# SOCIALACCOUNT_PROVIDERS = {
+#     'keycloak': {
+#         'KEY': 'myclient',
+#         'SECRET': 'z8WlX5KrCcaWpd2ZipI495IOvamDGCcn',
+#         'AUTH_PARAMS': {
+#             'scope': 'openid email profile'
+#         },
+#         'OIDC_ENDPOINT': 'http://localhost:8080/auth/realms/your-realm',
+#         'OAUTH2_TOKEN_URL': 'http://localhost:8080/auth/realms/BidMaster/protocol/openid-connect/token',
+#         'OAUTH2_AUTHORIZE_URL': 'http://localhost:8080/auth/realms/BidMaster/protocol/openid-connect/auth',
+#         'OAUTH2_USERINFO_URL': 'http://localhost:8080/auth/realms/BidMaster/protocol/openid-connect/userinfo',
+#         'OAUTH2_LOGOUT_URL': 'http://localhost:8080/auth/realms/BidMaster/protocol/openid-connect/logout'
+#     }
+# }
 
 # SOCIALACCOUNT_PROVIDERS = {
 #     'openid_connect': {
@@ -79,8 +90,6 @@ SOCIALACCOUNT_PROVIDERS = {
 #     }
 # }
 
-SOCIALACCOUNT_ADAPTER = 'your_app.adapters.CustomSocialAccountAdapter'
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -91,7 +100,8 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.openid_connect',
-    'allauth.socialaccount.providers.keycloak',
+    'rest_framework',
+    'drf_yasg',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

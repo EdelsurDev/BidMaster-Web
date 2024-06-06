@@ -5,12 +5,34 @@ from licitaciones.models import Tender
 from django.utils import timezone
 
 class Command(BaseCommand):
-    help = 'Import tenders from CSV file'
+    """
+    Clase para un comando personalizado que importa datos de licitaciones desde un CSV a la Base de datos del sistema.
+
+    Métodos:
+        add_arguments(parser): Añade argumentos al parser del comando.
+        handle(*args, **kwargs): Maneja la lógica principal del comando.
+        parse_date(date_str): Parsea una cadena de fecha y hora en un objeto datetime consciente de zona horaria.
+    """
 
     def add_arguments(self, parser):
-        parser.add_argument('csv_file', type=str, help='The path to the CSV file')
+        """
+        Añade argumentos al parser del comando.
+
+        Args:
+            parser (ArgumentParser): El parser de argumentos.
+        """
+        parser.add_argument('csv_file', type=str, help='La ruta al archivo CSV')
 
     def handle(self, *args, **kwargs):
+        """
+        Maneja la lógica principal del comando.
+
+        Lee los datos de licitaciones desde un archivo CSV y los guarda en la base de datos.
+
+        Args:
+            *args: Argumentos posicionales.
+            **kwargs: Argumentos de palabra clave.
+        """
         csv_file = kwargs['csv_file']
         with open(csv_file, 'r', encoding='utf-8') as file:
             reader = csv.DictReader(file, delimiter=';')
@@ -38,11 +60,20 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('Successfully imported data'))
 
     def parse_date(self, date_str):
+        """
+        Parsea una cadena de fecha y hora en un objeto datetime consciente de zona horaria.
+
+        Args:
+            date_str (str): La cadena de fecha y hora en formato '%Y-%m-%d %H:%M:%S'.
+
+        Returns:
+            datetime: El objeto datetime consciente de zona horaria, o None si la cadena está vacía o es inválida.
+        """
         try:
             if date_str:
-                # Convert the string to a naive datetime object
+                # Convierte la cadena en un objeto datetime naive
                 dt = datetime.datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
-                # Make the datetime object aware by localizing it to the current timezone
+                # Hace que el objeto datetime sea consciente de la zona horaria actual
                 dt = timezone.make_aware(dt, timezone.get_default_timezone())
                 return dt
             return None

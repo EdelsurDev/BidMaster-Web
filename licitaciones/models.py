@@ -1,6 +1,31 @@
 from django.db import models
+# from usuarios.models import Usuario
+from django.conf import settings
 
 class Tender(models.Model):
+    """
+    Modelo que representa una licitación.
+
+    Atributos:
+        planificacion_slug (CharField): Identificador slug para la planificación de la licitación.
+        convocatoria_slug (CharField): Identificador slug para la convocatoria de la licitación.
+        adjudicacion_slug (CharField): Identificador slug para la adjudicación de la licitación.
+        precalificacion_slug (CharField): Identificador slug para la precalificación de la licitación.
+        convenio_slug (CharField): Identificador slug para el convenio de la licitación.
+        nro_licitacion (CharField): Número de la licitación.
+        nombre_licitacion (CharField): Nombre de la licitación.
+        tipo_procedimiento (CharField): Tipo de procedimiento de la licitación.
+        categoria (CharField): Categoría de la licitación.
+        convocante (CharField): Entidad convocante de la licitación.
+        _etapa_licitacion (CharField): Etapa interna de la licitación.
+        etapa_licitacion (CharField): Etapa visible de la licitación.
+        fecha_entrega_oferta (DateTimeField): Fecha y hora de entrega de ofertas.
+        tipo_licitacion (CharField): Tipo de licitación.
+        fecha_estimada (DateTimeField): Fecha estimada para algún evento relacionado a la licitación.
+        fecha_publicacion_convocatoria (DateTimeField): Fecha de publicación de la convocatoria.
+        geo (CharField): Información geográfica relacionada con la licitación.
+    """
+
     planificacion_slug = models.CharField(max_length=1024, blank=True, default='')
     convocatoria_slug = models.CharField(max_length=1024, blank=True, default='')
     adjudicacion_slug = models.CharField(max_length=1024, blank=True, default='')
@@ -18,15 +43,36 @@ class Tender(models.Model):
     fecha_estimada = models.DateTimeField(null=True, blank=True)
     fecha_publicacion_convocatoria = models.DateTimeField(null=True, blank=True)
     geo = models.CharField(max_length=1024, blank=True, default='')
+    assigned_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_tenders')
 
     def __str__(self):
+        """
+        Retorna una representación en cadena de la licitación.
+
+        Returns:
+            str: El nombre de la licitación.
+        """
         return self.nombre_licitacion
     
 class ProcurementCategory(models.Model):
+    """
+    Modelo que representa una categoría de licitación.
+
+    Atributos:
+        id (CharField): Identificador único de la categoría de licitación.
+        nombre (CharField): Nombre de la categoría de licitación.
+    """
+
     id = models.CharField(max_length=255, primary_key=True)
     nombre = models.CharField(max_length=255)
 
     def __str__(self):
+        """
+        Retorna una representación en cadena de la categoría de licitación.
+
+        Returns:
+            str: El nombre de la categoría de licitación.
+        """
         return self.nombre
 
 # Create your models here.
