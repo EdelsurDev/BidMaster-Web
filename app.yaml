@@ -1,0 +1,15 @@
+runtime: python311
+
+handlers:
+  - url: /static
+    static_dir: static/
+
+  - url: /.*
+    script: auto
+
+env_variables:
+  DJANGO_SECRET_KEY: "django-insecure-!d6pv5guaf7dxmff1azyr@)#^azrzrw=(nc0+f@3j6*#!nv+iy"
+  DEBUG: "False"
+  DATABASE_URL: "postgres://djangoprod:321654@/licitacionesprod?host=/cloudsql/bidmaster-web:us-central1:bidmasterprod"
+
+entrypoint: gunicorn -b :$PORT BidMaster.wsgi
