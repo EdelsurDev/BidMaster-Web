@@ -22,6 +22,7 @@ from drf_yasg import openapi
 from rest_framework.permissions import IsAuthenticated
 from usuarios.models import Usuario
 from .serializers import TenderSerializer
+from usuarios.decorators import firebase_login_required
 
 
 # Create your views here.
@@ -53,7 +54,7 @@ def consultar_licitaciones_dncp(request):
         return JsonResponse({'error': str(e)}, status=500)
     
 class ProcurementCategoriesView(View):
-    
+    @firebase_login_required
     def get(self, request, *args, **kwargs):
         url = 'https://www.contrataciones.gov.py/datos/api/v3/doc/parameters/procurementCategories'
         response = requests.get(url)
@@ -100,7 +101,7 @@ class PlanningDetailView(PermissionRequiredMixin, APIView):
         }
     )
 
-    @method_decorator(login_required)
+    @firebase_login_required
     def get(self, request, *args, id, **kwargs):
         url = f'https://www.contrataciones.gov.py/datos/api/v3/doc/planning/{id}'
         response = requests.get(url)
@@ -142,7 +143,7 @@ class PlannedTenderSearchView(PermissionRequiredMixin, APIView):
             404: "Not Found"
         }
     )
-    @method_decorator(login_required)
+    @firebase_login_required
     def get(self, request):
         """
         Maneja las solicitudes GET para buscar licitaciones planificadas.
@@ -221,7 +222,8 @@ class TenderDetailView(PermissionRequiredMixin, APIView):
             404: "Not Found"
         }
     )
-    @method_decorator(login_required)
+    # @method_decorator(login_required)
+    @firebase_login_required
     def get(self, request, id, *args, **kwargs):
         """
         Maneja las solicitudes GET para obtener los detalles de una licitación.
@@ -275,7 +277,7 @@ class TenderSearchView(PermissionRequiredMixin, APIView):
             404: "Not Found"
         }
     )
-    @method_decorator(login_required)
+    @firebase_login_required
     def get(self, request):
         """
         Maneja las solicitudes GET para buscar licitaciones.
@@ -350,7 +352,7 @@ class AssignTenderAPIView(PermissionRequiredMixin, APIView):
     required_permission = 'assign_tender'
     permission_classes = [IsAuthenticated]
 
-    @method_decorator(login_required)
+    @firebase_login_required
     @swagger_auto_schema(
         operation_description="Asigna un usuario a una licitación.",
         request_body=openapi.Schema(
@@ -389,7 +391,7 @@ class AssignTenderAPIView(PermissionRequiredMixin, APIView):
         tender.save()
         return Response({'status': 'tender assigned'}, status=status.HTTP_200_OK)
 
-    @method_decorator(login_required)
+    @firebase_login_required
     @swagger_auto_schema(
         operation_description="Desasigna un usuario de una licitación.",
         manual_parameters=[
