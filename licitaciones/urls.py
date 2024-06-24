@@ -18,12 +18,9 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    #path('api-data/', consultar_licitaciones_dncp, name='api-data'),
-    # path("", views.index, name="index"),
     path('', home_view, name='home'),
-    path('procurement-categories/', ProcurementCategoriesView.as_view(), name='procurement_categories'),
-    path('procurement-categories/<str:id>/', ProcurementCategoriesView.as_view(), name='procurement_category_detail'),
-    # path('planning/<str:id>/', PlanningDetailView.as_view(), name='planning_detail'),
+    path('api/procurement_categories/', ProcurementCategoriesView.as_view(), name='procurement_categories'),
+    path('api/procurement_categories/<str:id>/', ProcurementCategoriesView.as_view(), name='procurement_category_detail'),
     path('api/planning/<int:id>/', PlanningDetailView.as_view(), name='planning-detail-api'),
     path('api/tender/<int:id>/', TenderDetailView.as_view(), name='tender-detail-api'),
     path('api/tender/search/', TenderSearchView.as_view(), name='tender-search-api'),
@@ -31,5 +28,4 @@ urlpatterns = [
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc-ui'),
     path('api/assign_tender/<int:user_id>/<str:nro_licitacion>/', AssignTenderAPIView.as_view(), name='assign_tender'),
-    # path('api/assign_tender/<str:nro_licitacion>/', AssignTenderAPIView.as_view(), name='unassign_tender'),
 ]

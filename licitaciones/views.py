@@ -30,81 +30,108 @@ from usuarios.decorators import firebase_login_required
 def home_view(request):
     return render(request, 'home.html')
 
-@require_http_methods(["GET"])
-def index(request):
-    #return HttpResponse("Hello, world")
-    url = "https://www.contrataciones.gov.py/datos/api/v3/doc/tender/429339"  # En durazo para probar
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        data = response.json()
-        return JsonResponse(data, safe=False)
-    except requests.RequestException as e:
-        return JsonResponse({'error': str(e)}, status=500)
+class ProcurementCategoriesView(PermissionRequiredMixin, APIView):
+    """
+    Vista para buscar categorías.
 
-@require_http_methods(["GET"])
-def consultar_licitaciones_dncp(request):
-    url = "https://www.contrataciones.gov.py/datos/api/v3/doc/tender/429339"  # En durazo para probar
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  # Raises an HTTPError for bad responses (4XX or 5XX)
-        data = response.json()  # Converts JSON response to a Python dictionary
-        return JsonResponse(data, safe=False)  # safe=False is needed if the top level JSON object is not a dictionary
-    except requests.RequestException as e:
-        return JsonResponse({'error': str(e)}, status=500)
+    Esta vista permite ver los distintos tipos de categorías de licitaciones y planificaciones.
 
-@method_decorator(firebase_login_required, name='dispatch')    
-class ProcurementCategoriesView(View):
-    # @firebase_login_required
+    Métodos:
+        get(request, *args, **kwargs): Maneja las solicitudes GET para buscar categorías.
+    """
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('nombre', openapi.IN_QUERY, description="Nombre de la categoría para filtrar", type=openapi.TYPE_STRING)
+        ],
+        responses={
+            200: openapi.Response('OK', openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'id': openapi.Schema(type=openapi.TYPE_STRING, description='ID de la categoría'),
+                        'nombre': openapi.Schema(type=openapi.TYPE_STRING, description='Nombre de la categoría'),
+                    }
+                )
+            )),
+            404: "Not Found"
+        }
+    )
     def get(self, request, *args, **kwargs):
+        """
+        Maneja las solicitudes GET para buscar categorías.
+
+        Args:
+            request (HttpRequest): El objeto de solicitud HTTP.
+
+        Returns:
+            JsonResponse: Una respuesta JSON que contiene los datos de las categorías,
+            incluyendo el estado HTTP.
+        """
         url = 'https://www.contrataciones.gov.py/datos/api/v3/doc/parameters/procurementCategories'
         response = requests.get(url)
         data = response.json()
 
-        # Extract the 'list' object from the JSON response
         categories = data.get('list', [])
 
-        # Check if 'id' is provided in the kwargs
         category_id = kwargs.get('id')
         if category_id:
-            # Find the category by id
             category = next((item for item in categories if item["id"] == category_id), None)
             if category is None:
                 raise Http404("Procurement category not found")
             return JsonResponse(category, safe=False)
 
-        # Check if 'nombre' query parameter is provided in the request
         nombre_keyword = request.GET.get('nombre')
         if nombre_keyword:
-            # Filter categories by 'nombre' keyword
             filtered_categories = [item for item in categories if nombre_keyword.lower() in item["nombre"].lower()]
             return JsonResponse(filtered_categories, safe=False)
 
-        # If no 'id' or 'nombre' is provided, return all categories
         return JsonResponse(categories, safe=False)
 
-@method_decorator(firebase_login_required, name='dispatch')    
+@method_decorator(firebase_login_required, name='dispatch')
 class PlanningDetailView(PermissionRequiredMixin, APIView):
+    """
+    Vista para obtener los detalles de una planificación específica.
+
+    Esta vista permite a los usuarios recuperar los detalles de una planificación utilizando su ID.
+
+    Atributos:
+        required_permission (str): El permiso requerido para acceder a esta vista.
+        permission_classes (list): Lista de clases de permisos requeridos.
+    
+    Métodos:
+        get(request, *args, id, **kwargs): Maneja las solicitudes GET para obtener los detalles de una planificación.
+    """
     required_permission = 'view_planning_detail'
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
         manual_parameters=[
-            openapi.Parameter('id', openapi.IN_PATH, description="ID de la planificacion", type=openapi.TYPE_STRING),
+            openapi.Parameter('id', openapi.IN_PATH, description="ID de la planificación", type=openapi.TYPE_STRING),
         ],
         responses={200: openapi.Response('OK', schema=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                'id': openapi.Schema(type=openapi.TYPE_STRING, description='ID de la planificacion'),
-                'name': openapi.Schema(type=openapi.TYPE_STRING, description='Nombre de la planificacion'),
+                'id': openapi.Schema(type=openapi.TYPE_STRING, description='ID de la planificación'),
+                'name': openapi.Schema(type=openapi.TYPE_STRING, description='Nombre de la planificación'),
             }
         )),
             404: "Not Found"
         }
     )
-
-    # @firebase_login_required
     def get(self, request, *args, id, **kwargs):
+        """
+        Maneja las solicitudes GET para obtener los detalles de una planificación.
+
+        Args:
+            request (HttpRequest): El objeto de solicitud HTTP.
+            id (int): El ID de la planificación.
+
+        Returns:
+            JsonResponse: Una respuesta JSON que contiene los detalles de la planificación
+            y el estado HTTP.
+        """
         url = f'https://www.contrataciones.gov.py/datos/api/v3/doc/planning/{id}'
         response = requests.get(url)
         if response.status_code == 404:
@@ -146,7 +173,7 @@ class PlannedTenderSearchView(PermissionRequiredMixin, APIView):
             404: "Not Found"
         }
     )
-    # @firebase_login_required
+
     def get(self, request):
         """
         Maneja las solicitudes GET para buscar licitaciones planificadas.
@@ -226,8 +253,7 @@ class TenderDetailView(PermissionRequiredMixin, APIView):
             404: "Not Found"
         }
     )
-    # @method_decorator(login_required)
-    # @firebase_login_required
+
     def get(self, request, id, *args, **kwargs):
         """
         Maneja las solicitudes GET para obtener los detalles de una licitación.
@@ -281,7 +307,7 @@ class TenderSearchView(PermissionRequiredMixin, APIView):
             404: "Not Found"
         }
     )
-    # @firebase_login_required
+
     def get(self, request):
         """
         Maneja las solicitudes GET para buscar licitaciones.
@@ -300,10 +326,8 @@ class TenderSearchView(PermissionRequiredMixin, APIView):
         page = request.GET.get('page', 1)
         page_size = request.GET.get('page_size', 10)
 
-        # Start with all tenders and apply ordering
         tenders = Tender.objects.all().order_by('-fecha_publicacion_convocatoria')
 
-        # Apply date filtering if provided
         if start_date:
             start_date = datetime.strptime(start_date, '%Y-%m-%d')
             tenders = tenders.filter(fecha_publicacion_convocatoria__gte=start_date)
@@ -312,7 +336,6 @@ class TenderSearchView(PermissionRequiredMixin, APIView):
             end_date = datetime.strptime(end_date, '%Y-%m-%d')
             tenders = tenders.filter(fecha_publicacion_convocatoria__lte=end_date)
 
-        # Apply additional filters using Q objects for combined filtering
         if categoria and keyword:
             tenders = tenders.filter(
                 Q(categoria__icontains=categoria) & 
@@ -323,7 +346,7 @@ class TenderSearchView(PermissionRequiredMixin, APIView):
         elif keyword:
             tenders = tenders.filter(nombre_licitacion__icontains=keyword)
 
-        # Paginate the results
+
         paginator = Paginator(tenders, page_size)
         paginated_tenders = paginator.get_page(page)
 
@@ -357,7 +380,6 @@ class AssignTenderAPIView(PermissionRequiredMixin, APIView):
     required_permission = 'assign_tender'
     permission_classes = [IsAuthenticated]
 
-    # @firebase_login_required
     @swagger_auto_schema(
         operation_description="Asigna un usuario a una licitación.",
         request_body=openapi.Schema(
@@ -396,7 +418,7 @@ class AssignTenderAPIView(PermissionRequiredMixin, APIView):
         tender.save()
         return Response({'status': 'tender assigned'}, status=status.HTTP_200_OK)
 
-    # @firebase_login_required
+
     @swagger_auto_schema(
         operation_description="Desasigna un usuario de una licitación.",
         manual_parameters=[
