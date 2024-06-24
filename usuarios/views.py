@@ -9,24 +9,7 @@ from .forms import UsuarioCreationForm
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import firebase_admin
-from firebase_admin import auth
-
-class RegisterView(View):
-    def get(self, request):
-        form = UsuarioCreationForm()
-        return render(request, 'registration/register.html', {'form': form})
-
-    def post(self, request):
-        form = UsuarioCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password1')
-            user = authenticate(username=username, password=password)
-            login(request, user)
-            return redirect('home')  # Redirect to a success page (home in this case)
-        return render(request, 'registration/register.html', {'form': form})
-    
+from firebase_admin import auth    
 
 @csrf_exempt
 def authenticate_user(request):

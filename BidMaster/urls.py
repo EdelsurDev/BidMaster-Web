@@ -18,9 +18,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
-    #path('api-data/', consultar_licitaciones_dncp, name='api-data'),
     path('admin/', admin.site.urls),
     path('', include('licitaciones.urls')),
     path('usuarios/', include('usuarios.urls')),
-    path('accounts/', include('allauth.urls')),
 ]

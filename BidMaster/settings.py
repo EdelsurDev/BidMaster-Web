@@ -13,6 +13,18 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 import dj_database_url
+import firebase_admin
+from firebase_admin import credentials
+
+import firebase_admin
+from firebase_admin import credentials
+
+# Path to your Firebase Admin SDK private key JSON file
+FIREBASE_ADMIN_CREDENTIAL = 'bidmaster-web-firebase-adminsdk-lr6wc-6d9968a93d.json'
+
+# Initialize Firebase Admin SDK
+cred = credentials.Certificate(FIREBASE_ADMIN_CREDENTIAL)
+firebase_admin.initialize_app(cred)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,12 +34,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+# SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+
+SECRET_KEY = "django-insecure-!d6pv5guaf7dxmff1azyr@)#^azrzrw=(nc0+f@3j6*#!nv+iy"
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG')
+# DEBUG = os.environ.get('DEBUG')
+DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+
+# ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'usuarios.Usuario'
 
@@ -35,61 +53,10 @@ SITE_ID = 1
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
-
-SOCIALACCOUNT_ADAPTER = 'usuarios.adapters.CustomSocialAccountAdapter'
-ACCOUNT_USER_MODEL_USERNAME_FIELD = 'username'
-ACCOUNT_USER_MODEL_EMAIL_FIELD = 'email'
-
-SOCIALACCOUNT_PROVIDERS = {
-    'openid_connect': {
-        'SERVER_URL': 'http://localhost:8080/auth/realms/your-realm',
-        'CLAIMS_VERIFICATION': True,
-        'AUTH_PARAMS': {
-            'scope': 'openid email profile'
-        },
-        'CLIENT_ID': 'my-client',
-        'CLIENT_SECRET': 'z8WlX5KrCcaWpd2ZipI495IOvamDGCcn',
-        'JWT_DECODE_OPTIONS': {'verify_aud': False},
-        'JWT_EXPIRATION_DELTA': 300,
-    }
-}
-
-# SOCIALACCOUNT_PROVIDERS = {
-#     'keycloak': {
-#         'KEY': 'myclient',
-#         'SECRET': 'z8WlX5KrCcaWpd2ZipI495IOvamDGCcn',
-#         'AUTH_PARAMS': {
-#             'scope': 'openid email profile'
-#         },
-#         'OIDC_ENDPOINT': 'http://localhost:8080/auth/realms/your-realm',
-#         'OAUTH2_TOKEN_URL': 'http://localhost:8080/auth/realms/BidMaster/protocol/openid-connect/token',
-#         'OAUTH2_AUTHORIZE_URL': 'http://localhost:8080/auth/realms/BidMaster/protocol/openid-connect/auth',
-#         'OAUTH2_USERINFO_URL': 'http://localhost:8080/auth/realms/BidMaster/protocol/openid-connect/userinfo',
-#         'OAUTH2_LOGOUT_URL': 'http://localhost:8080/auth/realms/BidMaster/protocol/openid-connect/logout'
-#     }
-# }
-
-# SOCIALACCOUNT_PROVIDERS = {
-#     'openid_connect': {
-#         'SERVERS': [
-#             {
-#                 'id': 'keycloak',
-#                 'name': 'Keycloak',
-#                 'server_url': 'http://localhost:8080/auth/',
-#                 'client_id': 'myclient',
-#                 'secret': 'z8WlX5KrCcaWpd2ZipI495IOvamDGCcn',
-#                 'key': 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsrdVTvIQmNMdo1FJUX7qEGnkyJe+GeaCByCE2p4udoWvaUC9pP+wniwicjQyq5psKjNF65F1yTXxVpwfZydnQZw2CVeAHB09BGuLc5kkeuiE05ubJdCsfzmNVUDoQPme+KDQ2depcx/U61Yn48wu/rrtfr8vvmN0BvVgLSVXOphl1cYCFQdbWSQASjWg7l35dBJN17/WVwV28LSXARhxOzH7eeMsuaG/QIq3O32yI9ewzBigThYyIk0+SnVDZuZNGQb6uteR5X/UNP8C57jlh1fIGZhmIZ+JGohx8i7k/3pZtJG7RUkxyRxbroLaYgUsRph/N+gBOdHitXDIlzxBGwIDAQAB',
-#                 'prompt': 'select_account',
-#                 'scopes': ['openid', 'profile', 'email'],
-#             }
-#         ]
-#     }
-# }
 
 # Application definition
 
@@ -97,10 +64,6 @@ INSTALLED_APPS = [
     'licitaciones.apps.LicitacionesConfig',
     'usuarios',
     'django.contrib.sites',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.openid_connect',
     'rest_framework',
     'drf_yasg',
     'django.contrib.admin',
@@ -119,7 +82,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'allauth.account.middleware.AccountMiddleware',
+    'usuarios.middleware.FirebaseAuthenticationMiddleware'
 ]
 
 ROOT_URLCONF = 'BidMaster.urls'
@@ -147,20 +110,20 @@ WSGI_APPLICATION = 'BidMaster.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 
-DATABASES = {
-    'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
-}
-
 # DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'licitacionesdev',
-#         'USER': 'djangodev',
-#         'PASSWORD': '321654',
-#         'HOST': '127.0.0.1',
-#         'PORT': '5432'
-#     }
+#     'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'licitacionesdev',
+        'USER': 'djangodev',
+        'PASSWORD': '321654',
+        'HOST': '127.0.0.1',
+        'PORT': '5432'
+    }
+}
 
 
 # Password validation
