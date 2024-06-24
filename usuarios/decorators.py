@@ -2,6 +2,7 @@ from functools import wraps
 from django.http import HttpResponseForbidden
 from usuarios.models import Permission
 from django.http import JsonResponse
+from django.contrib.auth.models import AnonymousUser
 
 def permission_required(permission_codename):
     def decorator(view_func):
@@ -24,7 +25,7 @@ def permission_required(permission_codename):
 
 def firebase_login_required(view_func):
     def _wrapped_view(request, *args, **kwargs):
-        if not request.firebase_user:
+        if isinstance(request.user, AnonymousUser):
             return JsonResponse({'error': 'Authentication required'}, status=401)
         return view_func(request, *args, **kwargs)
     return _wrapped_view

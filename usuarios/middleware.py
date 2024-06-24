@@ -1,9 +1,13 @@
-import firebase_admin
-from firebase_admin import auth
-from django.conf import settings
-from django.http import JsonResponse
+# middlewares.py
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
+from django.http import JsonResponse
+import firebase_admin
+from firebase_admin import auth
+
+# Initialize Firebase admin if not already initialized
+if not firebase_admin._apps:
+    firebase_admin.initialize_app()
 
 User = get_user_model()
 
@@ -24,9 +28,12 @@ class FirebaseAuthenticationMiddleware:
                     user = User.objects.create(username=uid, email=email)
                 request.user = user
             except Exception as e:
-                return JsonResponse({'error': 'Invalid token'}, status=401)
+                request.user = AnonymousUser()
         else:
             request.user = AnonymousUser()
+
+        # Make sure request.firebase_user is always set
+        request.firebase_user = request.user
 
         response = self.get_response(request)
         return response
