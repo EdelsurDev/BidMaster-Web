@@ -49,6 +49,11 @@ AUTH_USER_MODEL = 'usuarios.Usuario'
 
 SITE_ID = 1
 
+# Session settings
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
@@ -108,8 +113,19 @@ WSGI_APPLICATION = 'BidMaster.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 
+# DATABASES = {
+#     'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
+# }
+
 DATABASES = {
-    'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': '5432'
+    }
 }
 
 # DATABASES = {
@@ -118,8 +134,8 @@ DATABASES = {
 #         'NAME': 'licitacionesdev',
 #         'USER': 'djangodev',
 #         'PASSWORD': '321654',
-#         'HOST': '127.0.0.1',
-#         'PORT': '5432'
+#         'HOST': 'localhost',
+#         'PORT': '5432',
 #     }
 # }
 
