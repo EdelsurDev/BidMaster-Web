@@ -16,6 +16,10 @@ class FirebaseAuthenticationMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        # Bypass Firebase auth for admin URLs
+        if request.path.startswith('/admin/'):
+            return self.get_response(request)
+        
         id_token = request.headers.get('Authorization')
         if id_token:
             try:
