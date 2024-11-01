@@ -30,6 +30,7 @@ from usuarios.decorators import firebase_login_required
 def home_view(request):
     return render(request, 'home.html')
 
+
 class ProcurementCategoriesView(PermissionRequiredMixin, APIView):
     """
     Vista para buscar categorías.
@@ -139,7 +140,7 @@ class PlanningDetailView(PermissionRequiredMixin, APIView):
 
         return JsonResponse(response.json(), status=status.HTTP_200_OK)
 
-@method_decorator(firebase_login_required, name='dispatch')    
+@method_decorator(firebase_login_required, name='dispatch')
 class PlannedTenderSearchView(PermissionRequiredMixin, APIView):
     """
     Vista para buscar licitaciones planificadas.
